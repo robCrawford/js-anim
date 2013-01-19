@@ -1,7 +1,7 @@
 js-anim
 =======
 
-Stand-alone JS animations with easing *(no framework required - 1.4 kB)*  
+Stand-alone JS animations with easing *(no framework required - 1.5 kB)*  
 
 > [View a demo >](http://www.rcrawford.net/demos/js-anim/)  
   

@@ -7,7 +7,8 @@
  * http://www.opensource.org/licenses/mit-license.php
  * 
  * Elements used from: 
- * jQuery JavaScript Library: Copyright 2011 John Resig under MIT license http://jquery.org/license
+ * jQuery JavaScript Library: Copyright 2005, 2012 jQuery Foundation, Inc. and other contributors
+ * Released under the MIT license, http://jquery.org/license
  * Animation Step Value Generator by www.hesido.com
  *
  * Date: 19th January 2013
@@ -42,7 +43,7 @@
 	* @param callback (optional)  Function to call when animation is complete
 	*/
 		var frameDur = 10,
-			initPropVal = parseInt(getCurrCss(el, prop)),
+			initPropVal = parseInt(curCSS(el, prop)),
 			distance = Math.abs(to-initPropVal),
 			easeVal = (easing==="in")?1.5:(easing==="out")?0.5:1, // >1 ease-in, <1 ease-out
 			elAnimData = getData(el, 'animData');
@@ -155,33 +156,39 @@
 		return Math.ceil(stepp);
 	}
 
-	function getCurrCss(elem, name, force){
-	//Get current CSS - from jQuery.curCSS
-	//Removed sections for opacity and float!!
-		var getComputedStyle = document.defaultView && document.defaultView.getComputedStyle,
-			fcamelCase = function(all, letter){return letter.toUpperCase()},
-			ret, style = elem.style;
-		if (!force && style && style[name])ret = style[name]; 
-		else if(getComputedStyle){
-			name = name.replace(/([A-Z])/g, "-$1" ).toLowerCase();
-			var defaultView = elem.ownerDocument.defaultView;
-			if(!defaultView)return null;
-			var computedStyle = defaultView.getComputedStyle(elem, null);
-			if(computedStyle)ret = computedStyle.getPropertyValue(name);
-		} 
-		else if(elem.currentStyle){
-			var camelCase = name.replace(/-([a-z])/ig, fcamelCase);
-			ret = elem.currentStyle[name] || elem.currentStyle[camelCase];
-			if (!/^-?\d+(?:px)?$/i.test(ret) && /^-?\d/.test(ret)){
-				var left = style.left, rsLeft = elem.runtimeStyle.left;
-				elem.runtimeStyle.left = elem.currentStyle.left;
-				style.left = camelCase === "fontSize" ? "1em" : (ret || 0);
-				ret = style.pixelLeft + "px";
-				style.left = left;
-				elem.runtimeStyle.left = rsLeft;
+	//Get current CSS - from jQuery-1.9.0
+	var curCSS, getStyles,core_pnum = /[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source,
+		rnumnonpx = new RegExp( "^(" + core_pnum + ")(?!px)[a-z%]+$", "i" );
+	if(window.getComputedStyle){
+		getStyles = function(elem){return window.getComputedStyle( elem, null )};
+		curCSS = function( elem, name, _computed ){
+			var width, minWidth, maxWidth,computed = _computed || getStyles( elem ),
+				ret = computed ? computed.getPropertyValue( name ) || computed[ name ] : undefined,
+				style = elem.style;
+			if( computed ){
+				/* Edit - removed edge case as requires lots more jQuery code
+				if ( ret === "" && !jQuery.contains( elem.ownerDocument, elem ) ) {ret = jQuery.style( elem, name )}*/
+				if( rnumnonpx.test( ret ) && rmargin.test( name )){
+					width = style.width;minWidth = style.minWidth;
+					maxWidth = style.maxWidth;style.minWidth = style.maxWidth = style.width = ret;
+					ret = computed.width;style.width = width;style.minWidth = minWidth;style.maxWidth = maxWidth;}
 			}
+			return ret;
 		}
-		return ret;
+	}
+	else if (document.documentElement.currentStyle){
+		getStyles = function( elem ){return elem.currentStyle};
+		curCSS = function( elem, name, _computed ){
+			var left, rs, rsLeft,computed = _computed || getStyles( elem ),
+				ret = computed ? computed[ name ] : undefined,style = elem.style;
+			if( ret == null && style && style[ name ] ) {ret = style[ name ]}
+			if( rnumnonpx.test( ret ) && !rposition.test( name ) ) {
+				left = style.left;rs = elem.runtimeStyle;rsLeft = rs && rs.left;
+				if ( rsLeft ) {rs.left = elem.currentStyle.left;}
+				style.left = name === "fontSize" ? "1em" : ret;ret = style.pixelLeft + "px";
+				style.left = left;if ( rsLeft ) {rs.left = rsLeft}
+		}
+		return ret === "" ? "auto" : ret}
 	}
 
 })(window, document);
