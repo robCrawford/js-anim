@@ -17,12 +17,14 @@
 
 	//Configure naming
 	var globalAnimMethodName = "animate", //Name of globally accessible animate method
+		globalQuitMethodName = "quitAnims", //Name of globally accessible quitAnims method
 		domElExpandoName = "animData"; //Name of property on DOM elements for storing registry index
 
-	//Init
-	window[globalAnimMethodName] = animate;
+	//Init;
 	var data = {}, //Registry
 		currDataIndex = 1;
+	window[globalAnimMethodName] = animate;
+	window[globalQuitMethodName] = quitAnims;
 
 	/*------------------------------
 	  Animation 
@@ -91,8 +93,13 @@
 		if(callback)callback.call();
 	}
 
-	function clearAnim(el){
-	//Stop all current anims
+	function quitAnims(el){
+	/**
+	* Quit all animations on element
+	* i.e. quitAnims(div1);
+	* 
+	* @param el  DOM element
+	*/
 		var elAnimData = getData(el, "animData");
 		for(var p in elAnimData){
 			if(elAnimData.hasOwnProperty(p))endAnim(elAnimData[p]);

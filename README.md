@@ -1,7 +1,7 @@
 js-anim
 =======
 
-Stand-alone JS animations with easing *(no framework required - 1.2 kB)*  
+Stand-alone JS animations with easing *(no framework required - 1.4 kB)*  
 
 > [View a demo >](http://www.rcrawford.net/demos/js-anim/)  
   
@@ -17,5 +17,13 @@ animate(el, prop, to, pxPerSecond, easing, callback);
 * @param pxPerSecond  Speed of animation in pixels per second
 * @param easing (optional)  Easing type: "in" or "out"
 * @param callback (optional)  Function to call when animation is complete
+*/
+
+quitAnims(el);
+/**
+* Quit all animations on element
+* i.e. quitAnims(div1);
+* 
+* @param el  DOM element
 */
 ```
