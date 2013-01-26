@@ -16,40 +16,43 @@
 (function(window, document, undefined){
 	"use strict";
 
-	//Configure naming
-	var globalAnimMethodName = "animate", //Name of globally accessible animate method
-		globalQuitMethodName = "quitAnims", //Name of globally accessible quitAnims method
+	//Configure namespace
+	var namespace = window, //Attach anim methods to this namespace
+		animMethodName = "animate", //Name of animate method
+		quitMethodName = "quitAnims", //Name of quitAnims method
 		domElExpandoName = "animData"; //Name of property on DOM elements for storing registry index
 
 	//Init;
 	var data = {}, //Registry
 		currDataIndex = 1;
-	window[globalAnimMethodName] = animate;
-	window[globalQuitMethodName] = quitAnims;
+	namespace[animMethodName] = animate;
+	namespace[quitMethodName] = quitAnims;
 
 	/*------------------------------
 	  Animation 
 	 ------------------------------*/
-	function animate(el, prop, to, pxPerSecond, easing, callback){
+	function animate(el, prop, to, unitsPerSecond, easing, callback){
 	/**
 	* Animate style property
 	* i.e. animate(div1, "width", 1100, 1000, "out", function(){console.log('div1 anim end')});
 	* 
-	* @param el  DOM element
-	* @param prop  Property to animate
-	* @param to  Destination property value
-	* @param pxPerSecond  Speed of animation in pixels per second
-	* @param easing (optional)  Easing type: "in" or "out"
+	* @param el                   DOM element
+	* @param prop                 Property to animate
+	* @param to                   Destination property value
+	* @param unitsPerSecond       Speed of animation in units per second
+	* @param easing (optional)    Easing type: "in" or "out"
 	* @param callback (optional)  Function to call when animation is complete
 	*/
 		var frameDur = 10,
-			initPropVal = parseInt(curCSS(el, prop)),
-			distance = Math.abs(to-initPropVal),
+			fromCSS = curCSS(el, prop),
+			fromVal = parseFloat(fromCSS),
+			units = (fromCSS || "").substr((fromVal+"").length),
+			difference = Math.abs(to-fromVal),
 			easeVal = (easing==="in")?1.5:(easing==="out")?0.5:1, // >1 ease-in, <1 ease-out
 			elAnimData = getData(el, 'animData');
 
 		//Quit if already at 'to' val (still fire callback)
-		if(initPropVal===to){
+		if(fromVal===to){
 			if(callback)callback.call();
 			return;
 		}
@@ -76,12 +79,13 @@
 
 		//Create new anim
 		animDataOb.intId = (function(animDataOb){
-			var totalSteps = Math.round((distance/pxPerSecond)/(frameDur*.001)),
-				thisStep = 0;
+			var totalSteps = Math.round((difference/unitsPerSecond)/(frameDur*.001)),
+				thisStep = 0,
+				multiplier = 1000; //Avoids problems with decimals i.e. opacity
 
 			return setInterval(function(){
-				var newVal = easeInOut(initPropVal, to, totalSteps, thisStep++, easeVal);
-				if(!isNaN(newVal))el.style[prop] = newVal + "px"; //Allow 0
+				var newVal = easeInOut(fromVal*multiplier, to*multiplier, totalSteps, thisStep++, easeVal);
+				if(!isNaN(newVal))el.style[prop] = newVal/multiplier + units; //Allow 0
 				if(thisStep > totalSteps)endAnim(animDataOb, callback);
 			}, frameDur);
 		})(animDataOb);
@@ -149,7 +153,7 @@
 	/*------------------------------
 	  Utilities
 	 ------------------------------*/
-	function easeInOut(minValue,maxValue,totalSteps,actualStep,powr){
+	function easeInOut(minValue, maxValue, totalSteps, actualStep, powr){
 	//Generic Animation Step Value Generator by www.hesido.com 
 		var delta = maxValue - minValue;
 		var stepp = minValue+(Math.pow(((1 / totalSteps) * actualStep), powr) * delta);
@@ -157,37 +161,35 @@
 	}
 
 	//Get current CSS - from jQuery-1.9.0
-	var curCSS, getStyles,core_pnum = /[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source,
-		rnumnonpx = new RegExp( "^(" + core_pnum + ")(?!px)[a-z%]+$", "i" );
+	var curCSS, getStyles, core_pnum = /[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source,
+		rmargin = /^margin/, rnumnonpx = new RegExp( "^(" + core_pnum + ")(?!px)[a-z%]+$", "i" );
 	if(window.getComputedStyle){
 		getStyles = function(elem){return window.getComputedStyle( elem, null )};
 		curCSS = function( elem, name, _computed ){
-			var width, minWidth, maxWidth,computed = _computed || getStyles( elem ),
+			var width, minWidth, maxWidth, computed = _computed || getStyles( elem ),
 				ret = computed ? computed.getPropertyValue( name ) || computed[ name ] : undefined,
 				style = elem.style;
 			if( computed ){
 				/* Edit - removed edge case as requires lots more jQuery code
 				if ( ret === "" && !jQuery.contains( elem.ownerDocument, elem ) ) {ret = jQuery.style( elem, name )}*/
 				if( rnumnonpx.test( ret ) && rmargin.test( name )){
-					width = style.width;minWidth = style.minWidth;
-					maxWidth = style.maxWidth;style.minWidth = style.maxWidth = style.width = ret;
-					ret = computed.width;style.width = width;style.minWidth = minWidth;style.maxWidth = maxWidth;}
-			}
+					width = style.width; minWidth = style.minWidth; maxWidth = style.maxWidth;
+					style.minWidth = style.maxWidth = style.width = ret; ret = computed.width;
+					style.width = width; style.minWidth = minWidth; style.maxWidth = maxWidth}}
 			return ret;
 		}
 	}
 	else if (document.documentElement.currentStyle){
 		getStyles = function( elem ){return elem.currentStyle};
 		curCSS = function( elem, name, _computed ){
-			var left, rs, rsLeft,computed = _computed || getStyles( elem ),
-				ret = computed ? computed[ name ] : undefined,style = elem.style;
+			var left, rs, rsLeft, computed = _computed || getStyles( elem ),
+				ret = computed ? computed[ name ] : undefined, style = elem.style;
 			if( ret == null && style && style[ name ] ) {ret = style[ name ]}
 			if( rnumnonpx.test( ret ) && !rposition.test( name ) ) {
-				left = style.left;rs = elem.runtimeStyle;rsLeft = rs && rs.left;
-				if ( rsLeft ) {rs.left = elem.currentStyle.left;}
-				style.left = name === "fontSize" ? "1em" : ret;ret = style.pixelLeft + "px";
-				style.left = left;if ( rsLeft ) {rs.left = rsLeft}
-		}
+				left = style.left; rs = elem.runtimeStyle;rsLeft = rs && rs.left;
+				if ( rsLeft ) {rs.left = elem.currentStyle.left}
+				style.left = name === "fontSize" ? "1em" : ret; ret = style.pixelLeft + "px";
+				style.left = left; if ( rsLeft ) {rs.left = rsLeft}}
 		return ret === "" ? "auto" : ret}
 	}
 
