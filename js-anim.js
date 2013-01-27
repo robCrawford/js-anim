@@ -16,17 +16,15 @@
 (function(window, document, undefined){
 	"use strict";
 
-	//Configure namespace
-	var namespace = window, //Attach anim methods to this namespace
-		animMethodName = "animate", //Name of animate method
-		quitMethodName = "quitAnims", //Name of quitAnims method
-		domElExpandoName = "animData"; //Name of property on DOM elements for storing registry index
+	//Config
+	var namespace = window, //Attach animate and quitAnims methods to this namespace
+		domElExpandoName = "animData"; //Name of property on DOM elements for registry index
 
-	//Init;
+	//Init
 	var data = {}, //Registry
 		currDataIndex = 1;
-	namespace[animMethodName] = animate;
-	namespace[quitMethodName] = quitAnims;
+	namespace.animate = animate;
+	namespace.quitAnims = quitAnims;
 
 	/*------------------------------
 	  Animation 
@@ -43,7 +41,7 @@
 	* @param easing (optional)    Easing type: "in" or "out"
 	* @param callback (optional)  Function to call when animation is complete
 	*/
-		var frameDur = 10,
+		var frameDur = 25, //ms, recommended shortest duration - http://answers.oreilly.com/topic/1506-yielding-with-javascript-timers/
 			fromCSS = curCSS(el, prop),
 			fromVal = parseFloat(fromCSS),
 			units = (fromCSS || "").substr((fromVal+"").length),
