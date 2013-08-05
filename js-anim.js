@@ -1,28 +1,29 @@
-/*!
- * Stand-alone JS animations with easing
+/**
+ * @preserve Copyright 2013 Rob Crawford
  * https://github.com/robCrawford/js-anim
- *
- * Copyright 2013 Rob Crawford
  * Released under the MIT license
  * http://www.opensource.org/licenses/mit-license.php
  * 
- * Elements used from: 
  * jQuery JavaScript Library: Copyright 2005, 2012 jQuery Foundation, Inc. and other contributors
  * Released under the MIT license, http://jquery.org/license
  * Animation Step Value Generator by www.hesido.com
- *
- * Date: 19th January 2013
  */
-(function(window, document, undefined){
+/*
+Stand-alone JS animations with easing
+Date: 19th January 2013
+NOTE:
+	The namespace can easily be changed by supplying a third argument into the wrapping iife
+*/
+(function(window, document, namespace, undefined){ //Optionally supply namespace to attach animate() and quitAnims() methods
 	"use strict";
 
 	//Config
-	var namespace = window, //Attach animate and quitAnims methods to this namespace
-		domElExpandoName = "animData"; //Name of property on DOM elements for registry index
+	var domElExpandoName = "animData"; //Name of property on DOM elements for registry index
 
 	//Init
 	var data = {}, //Registry
 		currDataIndex = 1;
+	namespace = namespace || window;
 	namespace.animate = animate;
 	namespace.quitAnims = quitAnims;
 

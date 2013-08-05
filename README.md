@@ -1,7 +1,7 @@
 js-anim
 =======
 
-Stand-alone JS animations with easing *(no framework required - 1.6 kB)*  
+Stand-alone JS animations with easing *(no framework required - 2 kB)*  
 
 > [View a demo >](http://robc.eu5.org/demos/js-anim/)  
   
@@ -27,3 +27,6 @@ quitAnims(el);
 * @param el  DOM element
 */
 ```
+
+*NOTE:*  
+The namespace can easily be changed by supplying a third argument into the wrapping iife
