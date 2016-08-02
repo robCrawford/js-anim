@@ -3,7 +3,7 @@ js-anim
 
 Stand-alone JS animations with easing *(no framework required - 2 kB)*  
 
-> [View a demo >](https://www.googledrive.com/host/0B8xv-JJLBLuuYjBoc0R6VWp6eHM/)  
+> [View a demo >](http://robcrawford.github.io/demos/js-anim/)  
   
 ```javascript
 animate(el, prop, to, unitsPerSecond, easing, callback);
